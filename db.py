@@ -7,18 +7,18 @@ def find_database(path: str) -> str:
     """
     Accept either:
       - a direct path to a SQLite file, or
-      - a .lg folder — scan inside for the largest .db / .sqlite file
+      - a .lg folder — scan inside for the largest .db / .sqlite / .odb file
     Returns the path to the SQLite file, or raises FileNotFoundError.
     """
     p = Path(path)
     if p.is_file():
         return str(p)
     if p.is_dir():
-        candidates = list(p.rglob('*.db')) + list(p.rglob('*.sqlite'))
+        candidates = list(p.rglob('*.db')) + list(p.rglob('*.sqlite')) + list(p.rglob('*.odb'))
         if not candidates:
             raise FileNotFoundError(
                 f'No database file found inside {p}.\n'
-                'Expected a .db or .sqlite file inside the .lg folder.'
+                'Expected a .db, .sqlite, or .odb file inside the .lg folder.'
             )
         # Pick the largest file — that's almost always the main league db
         return str(max(candidates, key=lambda f: f.stat().st_size))
