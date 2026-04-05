@@ -259,6 +259,14 @@ class MainWindow(QMainWindow):
 
         root.addLayout(file_bar)
 
+        # Help text
+        help_label = QLabel(
+            'File location:  Documents \u2192 Out of the Park Developments \u2192 '
+            'OOTP Baseball 26 \u2192 saved_games \u2192 [Your League Name] \u2192 [League Name].lg'
+        )
+        help_label.setStyleSheet('color: #555; font-size: 11px; padding-left: 4px;')
+        root.addWidget(help_label)
+
         # --- Options bar ---
         opts_bar = QHBoxLayout()
 
@@ -310,18 +318,58 @@ class MainWindow(QMainWindow):
 
     def _apply_style(self):
         self.setStyleSheet("""
-            QMainWindow { background: #f0f0f0; }
-            QTabWidget::pane { border: 1px solid #ccc; }
-            QTabBar::tab { padding: 5px 14px; }
-            QTabBar::tab:selected { background: white; border-bottom: 2px solid #2060c0; }
-            QPushButton { padding: 4px 12px; }
-            QHeaderView::section {
-                background: #e0e8f8;
-                padding: 4px;
+            * { color: #1a1a1a; }
+            QMainWindow, QWidget { background: #f4f4f4; }
+            QTabWidget::pane { border: 1px solid #bbb; background: white; }
+            QTabBar::tab {
+                background: #dde3ec;
+                color: #1a1a1a;
+                padding: 6px 16px;
+                border: 1px solid #bbb;
+                border-bottom: none;
+                margin-right: 2px;
+            }
+            QTabBar::tab:selected {
+                background: white;
+                color: #1a1a1a;
+                border-bottom: 2px solid #2060c0;
+            }
+            QTabBar::tab:hover { background: #ccd4e8; }
+            QPushButton {
+                background: #2060c0;
+                color: white;
+                padding: 5px 14px;
                 border: none;
-                border-right: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            QPushButton:hover { background: #1a50a8; }
+            QPushButton:disabled { background: #aaa; color: #eee; }
+            QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+                background: white;
+                color: #1a1a1a;
+                border: 1px solid #bbb;
+                padding: 3px 6px;
+                border-radius: 2px;
+            }
+            QLabel { color: #1a1a1a; background: transparent; }
+            QHeaderView::section {
+                background: #dde3ec;
+                color: #1a1a1a;
+                padding: 5px 6px;
+                border: none;
+                border-right: 1px solid #bbb;
+                border-bottom: 1px solid #bbb;
                 font-weight: bold;
             }
+            QTableView {
+                background: white;
+                color: #1a1a1a;
+                gridline-color: #e0e0e0;
+                selection-background-color: #b8d0f0;
+                selection-color: #1a1a1a;
+            }
+            QStatusBar { background: #e0e4ec; color: #1a1a1a; }
+            QTextEdit { background: white; color: #1a1a1a; }
         """)
 
     # ------------------------------------------------------------------
