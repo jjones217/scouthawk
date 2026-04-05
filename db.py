@@ -1,5 +1,28 @@
 import sqlite3
 import pandas as pd
+from pathlib import Path
+
+
+def find_database(path: str) -> str:
+    """
+    Accept either:
+      - a direct path to a SQLite file, or
+      - a .lg folder — scan inside for the largest .db / .sqlite file
+    Returns the path to the SQLite file, or raises FileNotFoundError.
+    """
+    p = Path(path)
+    if p.is_file():
+        return str(p)
+    if p.is_dir():
+        candidates = list(p.rglob('*.db')) + list(p.rglob('*.sqlite'))
+        if not candidates:
+            raise FileNotFoundError(
+                f'No database file found inside {p}.\n'
+                'Expected a .db or .sqlite file inside the .lg folder.'
+            )
+        # Pick the largest file — that's almost always the main league db
+        return str(max(candidates, key=lambda f: f.stat().st_size))
+    raise FileNotFoundError(f'Path not found: {path}')
 
 POSITION_MAP = {
     0: '?',  1: 'SP', 2: 'RP',  3: 'C',
@@ -11,9 +34,9 @@ POSITION_MAP = {
 
 class OOTPDatabase:
     def __init__(self, path: str):
-        self.path = path
+        self.path = find_database(path)
         # Open read-only so we never corrupt the save file
-        self.conn = sqlite3.connect(f'file:{path}?mode=ro', uri=True)
+        self.conn = sqlite3.connect(f'file:{self.path}?mode=ro', uri=True)
         self._tables: list[str] | None = None
         self._col_cache: dict[str, list[str]] = {}
 

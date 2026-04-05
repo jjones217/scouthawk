@@ -261,8 +261,9 @@ class MainWindow(QMainWindow):
 
         # Help text
         help_label = QLabel(
-            'File location:  Documents \u2192 Out of the Park Developments \u2192 '
-            'OOTP Baseball 26 \u2192 saved_games \u2192 [Your League Name] \u2192 [League Name].lg'
+            'Select the .lg folder:  Documents \u2192 Out of the Park Developments \u2192 '
+            'OOTP Baseball 26 \u2192 saved_games \u2192 [Your League Name] \u2192 [League Name].lg  '
+            '(select the folder, don\u2019t open it)'
         )
         help_label.setStyleSheet('color: #555; font-size: 11px; padding-left: 4px;')
         root.addWidget(help_label)
@@ -377,12 +378,12 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _browse(self):
-        start = str(Path(self._db_path).parent) if self._db_path else self.DEFAULT_SAVE_DIR
-        path, _ = QFileDialog.getOpenFileName(
+        start = self._db_path if self._db_path else self.DEFAULT_SAVE_DIR
+        # .lg is a folder in OOTP 26 — use directory picker
+        path = QFileDialog.getExistingDirectory(
             self,
-            'Open OOTP League File',
+            'Select your .lg league folder',
             start,
-            'OOTP League Files (*.lg);;All Files (*)',
         )
         if path:
             self._db_path = path
