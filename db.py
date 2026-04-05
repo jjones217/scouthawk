@@ -3,22 +3,34 @@ import pandas as pd
 from pathlib import Path
 
 
+_SQLITE_MAGIC = b'SQLite format 3\x00'
+
+
+def _is_sqlite(path: Path) -> bool:
+    try:
+        with open(path, 'rb') as f:
+            return f.read(16) == _SQLITE_MAGIC
+    except OSError:
+        return False
+
+
 def find_database(path: str) -> str:
     """
     Accept either:
       - a direct path to a SQLite file, or
-      - a .lg folder — scan inside for the largest .db / .sqlite / .odb file
+      - a .lg folder — scan recursively for the largest SQLite file (detected
+        by magic bytes, so any extension works)
     Returns the path to the SQLite file, or raises FileNotFoundError.
     """
     p = Path(path)
     if p.is_file():
         return str(p)
     if p.is_dir():
-        candidates = list(p.rglob('*.db')) + list(p.rglob('*.sqlite')) + list(p.rglob('*.odb'))
+        candidates = [f for f in p.rglob('*') if f.is_file() and _is_sqlite(f)]
         if not candidates:
             raise FileNotFoundError(
-                f'No database file found inside {p}.\n'
-                'Expected a .db, .sqlite, or .odb file inside the .lg folder.'
+                f'No SQLite database found inside {p}.\n'
+                'Make sure you selected the .lg folder for your league.'
             )
         # Pick the largest file — that's almost always the main league db
         return str(max(candidates, key=lambda f: f.stat().st_size))
