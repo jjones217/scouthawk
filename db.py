@@ -4,6 +4,8 @@ from pathlib import Path
 
 
 _SQLITE_MAGIC = b'SQLite format 3\x00'
+_PLAYER_TABLES = {'players', 'players_career_batting_stats', 'players_career_pitching_stats',
+                  'player_batting_stats', 'player_pitching_stats', 'batting_stats', 'pitching_stats'}
 
 
 def _is_sqlite(path: Path) -> bool:
@@ -14,25 +16,37 @@ def _is_sqlite(path: Path) -> bool:
         return False
 
 
+def _has_player_data(path: Path) -> bool:
+    try:
+        conn = sqlite3.connect(f'file:{path}?mode=ro', uri=True)
+        tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+        conn.close()
+        return bool(tables & _PLAYER_TABLES)
+    except Exception:
+        return False
+
+
 def find_database(path: str) -> str:
     """
     Accept either:
       - a direct path to a SQLite file, or
-      - a .lg folder — scan recursively for the largest SQLite file (detected
-        by magic bytes, so any extension works)
+      - a .lg folder — scan recursively for a SQLite file that contains player
+        data (detected by magic bytes + table check, so any extension works)
     Returns the path to the SQLite file, or raises FileNotFoundError.
     """
     p = Path(path)
     if p.is_file():
         return str(p)
     if p.is_dir():
-        candidates = [f for f in p.rglob('*') if f.is_file() and _is_sqlite(f)]
+        sqlite_files = [f for f in p.rglob('*') if f.is_file() and _is_sqlite(f)]
+        candidates = [f for f in sqlite_files if _has_player_data(f)]
         if not candidates:
             raise FileNotFoundError(
-                f'No SQLite database found inside {p}.\n'
+                f'No league database found inside {p}.\n'
+                f'Found {len(sqlite_files)} SQLite file(s) but none contained player/stats tables.\n'
                 'Make sure you selected the .lg folder for your league.'
             )
-        # Pick the largest file — that's almost always the main league db
+        # Pick the largest matching file — that's the main league db
         return str(max(candidates, key=lambda f: f.stat().st_size))
     raise FileNotFoundError(f'Path not found: {path}')
 
